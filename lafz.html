@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lafz — word of the day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1C1712;
+    --paper:#F5EDE0;
+    --ink:#1C1712;
+    --gold:#C9A227;
+    --green:#3E5C4A;
+    --dim:#8A7F6E;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--paper);
+    font-family:'Karla', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{ width:100%; max-width:560px; }
+
+  header{ text-align:center; margin-bottom:24px; }
+  header h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:40px;
+    color:var(--paper);
+  }
+  header p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--dim);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    margin-top:4px;
+  }
+
+  .tabs{
+    display:flex;
+    justify-content:center;
+    gap:0;
+    margin-bottom:24px;
+    border:1.5px solid var(--dim);
+  }
+  .tabs button{
+    flex:1;
+    background:none;
+    border:none;
+    color:var(--dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:11px;
+    cursor:pointer;
+  }
+  .tabs button.active{ background:var(--gold); color:var(--bg); font-weight:700; }
+
+  .card{
+    background:var(--paper);
+    color:var(--ink);
+    padding:30px 26px;
+  }
+
+  .word-block{ text-align:center; margin-bottom:22px; }
+  .urdu-word{
+    font-family:'Noto Nastaliq Urdu', serif;
+    direction:rtl;
+    font-size:52px;
+    line-height:1.4;
+    color:var(--ink);
+  }
+  .roman-word{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    color:var(--dim);
+    margin-top:6px;
+  }
+  .pos-tag{
+    display:inline-block;
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    border:1.5px solid var(--green);
+    color:var(--green);
+    padding:3px 10px;
+  }
+
+  .meaning{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:500;
+    text-align:center;
+    margin-bottom:22px;
+    line-height:1.4;
+  }
+
+  .example-block{
+    border-top:1.5px dashed rgba(28,23,18,0.25);
+    padding-top:18px;
+  }
+  .example-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--dim);
+    margin-bottom:8px;
+  }
+  .example-urdu{
+    font-family:'Noto Nastaliq Urdu', serif;
+    direction:rtl;
+    font-size:22px;
+    margin-bottom:4px;
+  }
+  .example-roman{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--dim);
+    margin-bottom:4px;
+  }
+  .example-en{
+    font-size:14px;
+    font-style:italic;
+    color:rgba(28,23,18,0.75);
+  }
+
+  .add-btn{
+    width:100%;
+    margin-top:24px;
+    background:var(--green);
+    color:var(--paper);
+    border:none;
+    padding:14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    cursor:pointer;
+  }
+  .add-btn:disabled{ background:var(--dim); cursor:default; }
+  .add-btn.added::before{ content:"✓ "; }
+
+  .generate-btn{
+    width:100%;
+    background:var(--gold);
+    color:var(--bg);
+    border:none;
+    padding:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    cursor:pointer;
+  }
+  .generate-btn:disabled{ opacity:0.6; cursor:wait; }
+
+  .empty-state{
+    text-align:center;
+    color:var(--dim);
+    font-size:14px;
+    line-height:1.6;
+    padding:10px 6px 22px;
+  }
+
+  /* Dictionary view */
+  .dict-search{
+    width:100%;
+    background:rgba(245,237,224,0.06);
+    border:1.5px solid var(--dim);
+    color:var(--paper);
+    padding:11px 14px;
+    font-family:'Karla', sans-serif;
+    font-size:14px;
+    margin-bottom:18px;
+  }
+  .dict-search::placeholder{ color:var(--dim); }
+  .dict-search:focus{ outline:none; border-color:var(--gold); }
+
+  .dict-entry{
+    background:var(--paper);
+    color:var(--ink);
+    padding:16px 20px;
+    margin-bottom:10px;
+    cursor:pointer;
+  }
+  .dict-entry-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+  }
+  .dict-urdu{
+    font-family:'Noto Nastaliq Urdu', serif;
+    direction:rtl;
+    font-size:26px;
+  }
+  .dict-meaning{
+    font-family:'Karla', sans-serif;
+    font-size:13.5px;
+    color:rgba(28,23,18,0.7);
+    text-align:right;
+  }
+  .dict-detail{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1.5px dashed rgba(28,23,18,0.2);
+    display:none;
+  }
+  .dict-entry.open .dict-detail{ display:block; }
+  .dict-roman{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--dim); margin-bottom:8px; }
+
+  .empty-dict{
+    text-align:center;
+    color:var(--dim);
+    font-size:14px;
+    padding:40px 10px;
+    line-height:1.6;
+  }
+
+  .error-banner{
+    background:#8C3B3B;
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:12px 16px;
+    margin-bottom:16px;
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .error-banner button{
+    background:var(--paper);
+    color:#8C3B3B;
+    border:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    font-weight:700;
+    padding:5px 10px;
+    cursor:pointer;
+    text-transform:uppercase;
+  }
+
+  footer{
+    margin-top:32px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--dim);
+    text-align:center;
+    letter-spacing:0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>لفظ Lafz</h1>
+    <p>one word a day</p>
+  </header>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <div class="tabs">
+    <button id="tabToday" class="active">Today</button>
+    <button id="tabDict">My Dictionary (<span id="dictCount">0</span>)</button>
+  </div>
+
+  <div id="todayView"></div>
+  <div id="dictView" style="display:none;">
+    <input class="dict-search" id="dictSearch" type="text" placeholder="Search your dictionary...">
+    <div id="dictList"></div>
+  </div>
+
+  <footer>no sign-up · everything stays on this device</footer>
+</div>
+
+<script>
+// ====== CONFIG — fill this in after you deploy the Cloudflare Worker ======
+const WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
+// ============================================================================
+
+const STORAGE_KEY = 'lafz_state_v1';
+let state = { today: null, dictionary: [], shownWords: [] };
+
+function todayStr(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state = raw ? JSON.parse(raw) : { today: null, dictionary: [], shownWords: [] };
+  } catch(e) { state = { today: null, dictionary: [], shownWords: [] }; }
+}
+function saveState(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { /* not fatal */ }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function showError(msg, retryFn){
+  const banner = document.getElementById('errorBanner');
+  banner.innerHTML = '';
+  banner.appendChild(document.createTextNode(msg));
+  if (retryFn) {
+    const btn = document.createElement('button');
+    btn.textContent = 'Retry';
+    btn.onclick = () => { banner.style.display = 'none'; retryFn(); };
+    banner.appendChild(btn);
+  }
+  banner.style.display = 'flex';
+}
+function clearError(){ document.getElementById('errorBanner').style.display = 'none'; }
+
+// ---------- Tabs ----------
+document.getElementById('tabToday').onclick = () => switchTab('today');
+document.getElementById('tabDict').onclick = () => switchTab('dict');
+
+function switchTab(which){
+  document.getElementById('tabToday').classList.toggle('active', which === 'today');
+  document.getElementById('tabDict').classList.toggle('active', which === 'dict');
+  document.getElementById('todayView').style.display = which === 'today' ? 'block' : 'none';
+  document.getElementById('dictView').style.display = which === 'dict' ? 'block' : 'none';
+  if (which === 'dict') renderDictionary();
+}
+
+// ---------- Today view ----------
+function renderToday(){
+  const view = document.getElementById('todayView');
+  const hasToday = state.today && state.today.date === todayStr();
+
+  if (!hasToday) {
+    view.innerHTML = `
+      <div class="card">
+        <div class="empty-state">No word yet for today. Generate one whenever you're ready.</div>
+        <button class="generate-btn" id="generateBtn">Get today's word</button>
+      </div>
+    `;
+    document.getElementById('generateBtn').onclick = generateWord;
+    return;
+  }
+
+  const w = state.today;
+  const alreadySaved = state.dictionary.some(d => d.urdu_script === w.urdu_script);
+
+  view.innerHTML = `
+    <div class="card">
+      <div class="word-block">
+        <div class="urdu-word">${escapeHtml(w.urdu_script)}</div>
+        <div class="roman-word">${escapeHtml(w.roman_urdu)}</div>
+        <div class="pos-tag">${escapeHtml(w.part_of_speech)}</div>
+      </div>
+      <div class="meaning">${escapeHtml(w.meaning_en)}</div>
+      <div class="example-block">
+        <div class="example-label">Example</div>
+        <div class="example-urdu">${escapeHtml(w.example_urdu_script)}</div>
+        <div class="example-roman">${escapeHtml(w.example_roman)}</div>
+        <div class="example-en">${escapeHtml(w.example_en)}</div>
+      </div>
+      <button class="add-btn ${alreadySaved ? 'added' : ''}" id="addBtn" ${alreadySaved ? 'disabled' : ''}>
+        ${alreadySaved ? 'Added to your dictionary' : 'Add to my dictionary'}
+      </button>
+    </div>
+  `;
+  if (!alreadySaved) {
+    document.getElementById('addBtn').onclick = () => {
+      state.dictionary.unshift({ ...w, addedDate: todayStr() });
+      saveState();
+      renderToday();
+      updateDictCount();
+    };
+  }
+}
+
+async function generateWord(){
+  const btn = document.getElementById('generateBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Fetching a word…'; }
+  clearError();
+
+  if (!WORKER_URL || WORKER_URL === "PASTE_YOUR_WORKER_URL_HERE") {
+    showError('The Worker URL is not set yet — open the file and paste your deployed Worker URL into WORKER_URL near the top of the script.');
+    if (btn) { btn.disabled = false; btn.textContent = "Get today's word"; }
+    return;
+  }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shownWords: state.shownWords.slice(-60) })
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + (errText ? ': ' + errText.slice(0,150) : ''));
+    }
+    const data = await res.json();
+    if (!data.urdu_script || !data.meaning_en) {
+      throw new Error('Got an unexpected response shape back.');
+    }
+    state.today = { date: todayStr(), ...data };
+    state.shownWords.push(data.urdu_script);
+    saveState();
+    renderToday();
+  } catch(err) {
+    const isRateLimit = err.message && err.message.includes('429');
+    const msg = isRateLimit
+      ? "Hit the free plan's rate limit — wait about a minute, then tap Retry."
+      : "Couldn't fetch today's word — " + err.message;
+    showError(msg, generateWord);
+    if (btn) { btn.disabled = false; btn.textContent = "Get today's word"; }
+  }
+}
+
+// ---------- Dictionary view ----------
+function updateDictCount(){
+  document.getElementById('dictCount').textContent = state.dictionary.length;
+}
+
+function renderDictionary(filter){
+  const listEl = document.getElementById('dictList');
+  const q = (filter || document.getElementById('dictSearch').value || '').trim().toLowerCase();
+  const entries = state.dictionary.filter(d =>
+    !q || d.urdu_script.toLowerCase().includes(q) || d.roman_urdu.toLowerCase().includes(q) || d.meaning_en.toLowerCase().includes(q)
+  );
+
+  if (state.dictionary.length === 0) {
+    listEl.innerHTML = `<div class="empty-dict">Your dictionary is empty. Add today's word to start building it.</div>`;
+    return;
+  }
+  if (entries.length === 0) {
+    listEl.innerHTML = `<div class="empty-dict">No matches for "${escapeHtml(q)}".</div>`;
+    return;
+  }
+
+  listEl.innerHTML = '';
+  entries.forEach((d, i) => {
+    const entryEl = document.createElement('div');
+    entryEl.className = 'dict-entry';
+    entryEl.innerHTML = `
+      <div class="dict-entry-top">
+        <div class="dict-urdu">${escapeHtml(d.urdu_script)}</div>
+        <div class="dict-meaning">${escapeHtml(d.meaning_en)}</div>
+      </div>
+      <div class="dict-detail">
+        <div class="dict-roman">${escapeHtml(d.roman_urdu)} · ${escapeHtml(d.part_of_speech)}</div>
+        <div class="example-urdu">${escapeHtml(d.example_urdu_script)}</div>
+        <div class="example-roman">${escapeHtml(d.example_roman)}</div>
+        <div class="example-en">${escapeHtml(d.example_en)}</div>
+      </div>
+    `;
+    entryEl.onclick = () => entryEl.classList.toggle('open');
+    listEl.appendChild(entryEl);
+  });
+}
+
+document.getElementById('dictSearch').addEventListener('input', (e) => renderDictionary(e.target.value));
+
+loadState();
+updateDictCount();
+renderToday();
+</script>
+</body>
+</html>
